@@ -8,7 +8,6 @@
 
   <title>My Free WebAR Experience</title>
 
-  <!-- Google model-viewer -->
   <script
     type="module"
     src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js">
@@ -50,15 +49,33 @@
     .viewer-card {
       overflow: hidden;
       border-radius: 16px;
-      background: white;
+      background: #fff;
     }
 
     model-viewer {
       display: block;
+      position: relative;
       width: 100%;
       height: 60vh;
       min-height: 340px;
-      background: #ffffff;
+      background: #fff;
+    }
+
+    /* Built-in model-viewer AR button */
+    #ar-button {
+      position: absolute;
+      left: 50%;
+      bottom: 16px;
+      transform: translateX(-50%);
+      padding: 14px 24px;
+      border: none;
+      border-radius: 30px;
+      background: #2563eb;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      white-space: nowrap;
+      cursor: pointer;
     }
 
     #status {
@@ -73,25 +90,6 @@
       color: #fecaca;
       padding: 10px;
       overflow-wrap: anywhere;
-    }
-
-    /* Always visible */
-    #ar-button {
-      display: inline-block;
-      margin: 10px auto 20px;
-      padding: 15px 28px;
-      border: none;
-      border-radius: 50px;
-      background: #2563eb;
-      color: #ffffff;
-      font-size: 17px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    #ar-button:disabled {
-      background: #64748b;
-      cursor: not-allowed;
     }
 
     .instructions {
@@ -119,7 +117,9 @@
 <body>
   <header>
     <h1>My WebAR Experience</h1>
-    <p>Explore a 3D model and view it in your real environment.</p>
+    <p>
+      Explore a 3D model and view it in your real environment.
+    </p>
   </header>
 
   <main>
@@ -129,12 +129,18 @@
         src="./model.glb"
         alt="Interactive 3D model"
         ar
-        ar-modes="scene-viewer quick-look webxr"
+        ar-modes="scene-viewer webxr quick-look"
         ar-scale="auto"
         camera-controls
         auto-rotate
         shadow-intensity="1"
-        loading="eager">
+        loading="eager"
+        reveal="auto">
+
+        <button slot="ar-button" id="ar-button">
+          View in AR
+        </button>
+
       </model-viewer>
     </section>
 
@@ -144,23 +150,20 @@
 
     <p id="error" role="alert"></p>
 
-    <!-- Visible even before the model loads -->
-    <button id="ar-button" type="button">
-      View in AR
-    </button>
-
     <section class="instructions">
       <h2>How to use</h2>
       <ol>
-        <li>Drag the model to rotate it.</li>
-        <li>Zoom using your mouse wheel or pinch gestures.</li>
+        <li>Wait for the 3D model to load.</li>
+        <li>Drag to rotate the model and zoom as needed.</li>
         <li>Open this website on a compatible smartphone.</li>
         <li>Tap View in AR and follow the on-screen instructions.</li>
       </ol>
+
       <p>
-        Android generally uses Google Scene Viewer.
-        iPhone generally uses Apple Quick Look.
-        AR availability depends on your device and browser.
+        Android: use a compatible device and Chrome.
+        iPhone: use Safari for Apple Quick Look.
+        AR availability depends on your device, browser,
+        and supported AR software.
       </p>
     </section>
   </main>
@@ -173,60 +176,35 @@
     const viewer = document.getElementById("viewer");
     const status = document.getElementById("status");
     const error = document.getElementById("error");
-    const arButton = document.getElementById("ar-button");
-
-    let modelLoaded = false;
 
     viewer.addEventListener("load", () => {
-      modelLoaded = true;
+      status.textContent = "3D model loaded successfully.";
       error.style.display = "none";
-
-      status.textContent =
-        "3D model loaded successfully.";
-
-      arButton.disabled = false;
-      arButton.textContent = "View in AR";
     });
 
     viewer.addEventListener("error", () => {
-      modelLoaded = false;
-
-      status.textContent =
-        "The 3D model could not be loaded.";
-
+      status.textContent = "The 3D model could not be loaded.";
       error.style.display = "block";
       error.textContent =
-        "Check that model.glb exists in the same repository folder as index.html and is a valid GLB file.";
+        "Check that model.glb exists in the same folder as index.html and is a valid GLB file.";
     });
 
-    arButton.addEventListener("click", async () => {
-      if (!customElements.get("model-viewer")) {
+    viewer.addEventListener("ar-status", (event) => {
+      const arStatus = event.detail.status;
+
+      if (arStatus === "session-started") {
+        status.textContent = "AR session started.";
+      } else if (arStatus === "not-presenting") {
+        status.textContent = "AR session closed.";
+      } else if (arStatus === "failed") {
         status.textContent =
-          "The 3D viewer library did not load. Check your internet connection.";
-        return;
+          "AR could not start. Check device compatibility and browser support.";
       }
+    });
 
-      if (!modelLoaded) {
-        status.textContent =
-          "The 3D model is not loaded yet. Check the model file and try again.";
-        return;
-      }
-
-      try {
-        const supported = await viewer.canActivateAR();
-
-        if (!supported) {
-          status.textContent =
-            "AR is not supported in this browser or on this device. Try a compatible Android phone with Chrome or an iPhone with Safari.";
-          return;
-        }
-
-        await viewer.activateAR();
-
-      } catch (err) {
-        status.textContent =
-          "Could not launch AR. Check device compatibility and browser permissions.";
-        console.error("AR launch error:", err);
+    viewer.addEventListener("ar-tracking", (event) => {
+      if (event.detail.status === "tracking") {
+        status.textContent = "AR tracking is active.";
       }
     });
   </script>
