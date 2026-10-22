@@ -4,10 +4,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <title>Free WebAR Experience</title>
   <meta name="theme-color" content="#101827">
-  <meta name="description" content="View and place an interactive 3D model in your real-world environment.">
+
+  <title>My Free WebAR Experience</title>
 
   <!-- Google model-viewer -->
   <script
@@ -22,78 +21,71 @@
 
     body {
       margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
+      font-family: Arial, sans-serif;
       color: #f8fafc;
       background: #101827;
+      text-align: center;
     }
 
     header {
-      padding: 28px 16px 18px;
-      text-align: center;
+      padding: 26px 16px 16px;
     }
 
     h1 {
       margin: 0 0 10px;
-      font-size: clamp(26px, 5vw, 38px);
+      font-size: clamp(26px, 5vw, 36px);
     }
 
     header p {
-      margin: 0;
       color: #cbd5e1;
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
     main {
-      width: min(100% - 24px, 900px);
-      margin: 0 auto 32px;
+      width: min(100% - 24px, 850px);
+      margin: auto;
+      padding-bottom: 30px;
     }
 
     .viewer-card {
       overflow: hidden;
-      border: 1px solid #334155;
-      border-radius: 18px;
-      background: #ffffff;
+      border-radius: 16px;
+      background: white;
     }
 
     model-viewer {
       display: block;
       width: 100%;
-      height: min(65vh, 600px);
-      min-height: 360px;
+      height: 60vh;
+      min-height: 340px;
       background: #ffffff;
-
-      --poster-color: #ffffff;
-      --progress-bar-color: #2563eb;
-      --progress-mask: #e2e8f0;
     }
 
     #status {
-      padding: 12px 16px;
       color: #cbd5e1;
-      text-align: center;
       font-size: 14px;
       line-height: 1.5;
+      padding: 10px;
     }
 
     #error {
       display: none;
-      padding: 12px 16px;
       color: #fecaca;
-      text-align: center;
+      padding: 10px;
       overflow-wrap: anywhere;
     }
 
-    /* Always-visible custom AR button */
+    /* Always visible */
     #ar-button {
-      display: none;
-      margin: 0 auto 18px;
-      padding: 14px 24px;
-      border: 0;
-      border-radius: 999px;
-      color: #ffffff;
+      display: inline-block;
+      margin: 10px auto 20px;
+      padding: 15px 28px;
+      border: none;
+      border-radius: 50px;
       background: #2563eb;
-      font-size: 16px;
-      font-weight: 700;
+      color: #ffffff;
+      font-size: 17px;
+      font-weight: bold;
       cursor: pointer;
     }
 
@@ -103,23 +95,22 @@
     }
 
     .instructions {
-      margin-top: 18px;
       padding: 18px;
+      margin-top: 15px;
       border: 1px solid #334155;
       border-radius: 14px;
-      line-height: 1.7;
+      text-align: left;
       color: #e2e8f0;
+      line-height: 1.7;
     }
 
     .instructions h2 {
-      margin-top: 0;
       font-size: 19px;
     }
 
     footer {
-      padding: 18px;
+      padding: 20px;
       color: #94a3b8;
-      text-align: center;
       font-size: 13px;
     }
   </style>
@@ -128,7 +119,7 @@
 <body>
   <header>
     <h1>My WebAR Experience</h1>
-    <p>Explore the 3D model, then place it in your real environment.</p>
+    <p>Explore a 3D model and view it in your real environment.</p>
   </header>
 
   <main>
@@ -141,25 +132,19 @@
         ar-modes="scene-viewer quick-look webxr"
         ar-scale="auto"
         camera-controls
-        touch-action="pan-y"
         auto-rotate
         shadow-intensity="1"
-        environment-image="neutral"
-        exposure="1"
         loading="eager">
-
-        <div slot="progress-bar">
-        </div>
-
       </model-viewer>
     </section>
 
     <p id="status" role="status" aria-live="polite">
-      Loading 3D model...
+      Loading the 3D model...
     </p>
 
     <p id="error" role="alert"></p>
 
+    <!-- Visible even before the model loads -->
     <button id="ar-button" type="button">
       View in AR
     </button>
@@ -167,20 +152,21 @@
     <section class="instructions">
       <h2>How to use</h2>
       <ol>
-        <li>Rotate the model by dragging it.</li>
-        <li>Zoom using pinch gestures or your mouse wheel.</li>
-        <li>On a supported phone, tap "View in AR".</li>
-        <li>Follow the phone's instructions to place the object.</li>
+        <li>Drag the model to rotate it.</li>
+        <li>Zoom using your mouse wheel or pinch gestures.</li>
+        <li>Open this website on a compatible smartphone.</li>
+        <li>Tap View in AR and follow the on-screen instructions.</li>
       </ol>
       <p>
-        AR requires a compatible mobile device and supported browser.
-        On Android, Scene Viewer may open. On iPhone, Quick Look may open.
+        Android generally uses Google Scene Viewer.
+        iPhone generally uses Apple Quick Look.
+        AR availability depends on your device and browser.
       </p>
     </section>
   </main>
 
   <footer>
-    Free WebAR demo powered by Google's model-viewer.
+    Free WebAR demo powered by model-viewer.
   </footer>
 
   <script>
@@ -189,54 +175,58 @@
     const error = document.getElementById("error");
     const arButton = document.getElementById("ar-button");
 
-    viewer.addEventListener("load", () => {
-      status.textContent =
-        "3D model loaded successfully. Drag to rotate the model.";
+    let modelLoaded = false;
 
+    viewer.addEventListener("load", () => {
+      modelLoaded = true;
       error.style.display = "none";
 
-      // Show the custom button after the model loads.
-      arButton.style.display = "block";
+      status.textContent =
+        "3D model loaded successfully.";
 
-      viewer.canActivateAR().then((supported) => {
-        if (supported) {
-          arButton.disabled = false;
-          arButton.textContent = "View in AR";
-        } else {
-          arButton.disabled = true;
-          arButton.textContent = "AR unavailable on this device";
-          status.textContent =
-            "The 3D model is ready. Open this website on a compatible phone to use AR.";
-        }
-      }).catch(() => {
-        arButton.disabled = true;
-        arButton.textContent = "AR unavailable";
-        status.textContent =
-          "The 3D model is ready, but AR support could not be detected.";
-      });
+      arButton.disabled = false;
+      arButton.textContent = "View in AR";
     });
 
     viewer.addEventListener("error", () => {
-      status.textContent = "Could not load the 3D model.";
+      modelLoaded = false;
+
+      status.textContent =
+        "The 3D model could not be loaded.";
 
       error.style.display = "block";
       error.textContent =
-        "Check that model.glb is uploaded beside index.html and that the file is a valid GLB model.";
+        "Check that model.glb exists in the same repository folder as index.html and is a valid GLB file.";
     });
 
     arButton.addEventListener("click", async () => {
+      if (!customElements.get("model-viewer")) {
+        status.textContent =
+          "The 3D viewer library did not load. Check your internet connection.";
+        return;
+      }
+
+      if (!modelLoaded) {
+        status.textContent =
+          "The 3D model is not loaded yet. Check the model file and try again.";
+        return;
+      }
+
       try {
         const supported = await viewer.canActivateAR();
 
-        if (supported) {
-          await viewer.activateAR();
-        } else {
+        if (!supported) {
           status.textContent =
-            "AR is not available in this browser or device. Try a compatible Android phone with Chrome or an iPhone with Safari.";
+            "AR is not supported in this browser or on this device. Try a compatible Android phone with Chrome or an iPhone with Safari.";
+          return;
         }
+
+        await viewer.activateAR();
+
       } catch (err) {
         status.textContent =
-          "Unable to launch AR. Check device compatibility and browser permissions.";
+          "Could not launch AR. Check device compatibility and browser permissions.";
+        console.error("AR launch error:", err);
       }
     });
   </script>
